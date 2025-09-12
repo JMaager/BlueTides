@@ -11,5 +11,5 @@ body { margin:0; font:16px system-ui, sans-serif; background:var(--bg); color:va
 .btn:disabled { opacity:.6; cursor:not-allowed; }
 .stack > * + * { margin-top: .75rem; }
 .error { color: #fca5a5; }
-
-a { color: white; text-decoration: none;} a:hover { text-decoration: underline; }
+a { color: white; text-decoration: none; } a:hover { text-decoration: underline; color: white; }
+.btn { color: white; text-decoration: none;} .btn:hover { text-decoration: underline; color: white; }
