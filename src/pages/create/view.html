@@ -1,0 +1,26 @@
+<section class="card">
+  <h2>Create post</h2>
+  <form id="create-form" class="stack">
+    <label>
+      <div>Title (optional)</div>
+      <input name="title" class="input" placeholder="A short title" />
+    </label>
+    <label>
+      <div>Body</div>
+      <textarea name="body" class="input" rows="5" required placeholder="Write something..."></textarea>
+    </label>
+    <details>
+      <summary>Media (optional)</summary>
+      <label>
+        <div>Image URL</div>
+        <input name="mediaUrl" class="input" placeholder="https://..." />
+      </label>
+      <label>
+        <div>Alt text</div>
+        <input name="mediaAlt" class="input" placeholder="Describe the image" />
+      </label>
+    </details>
+    <button class="btn" type="submit">Publish</button>
+    <p id="create-error" class="error" role="alert" hidden></p>
+  </form>
+</section>

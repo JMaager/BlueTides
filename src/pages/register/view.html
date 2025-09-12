@@ -1,0 +1,20 @@
+<section class="card">
+    <h2>Create account</h2>
+    <form id="register-form" class="stack">
+        <label>
+            <div>Display name (no spaces)</div>
+            <input name="name" class="input" pattern="^\S+$" title="No spaces" required />
+        </label>
+        <label> 
+            <div>Email</div>
+            <input name="email" type="email" class="input" required />
+        </label>
+        <label>
+            <div>Password (min 8 chars)</div>
+            <input name="password" type="password" class="input" minlength="8" required />
+        </label>
+        <button class="btn" type="submit">Create account</button>
+        <p id="register-error" class="error" role="alert" hidden></p>
+        <p>Already have an account? <a href="#/login">Sign in</a></p>
+    </form>
+</section>
