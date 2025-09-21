@@ -12,6 +12,12 @@ export function renderCreatePost() {
 
     const form = qs("#create-form");
     const err = qs("#create-error");
+    const backBtn = qs("#back-btn");
+
+    backBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      history.back();
+    });
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();

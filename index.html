@@ -1,23 +1,32 @@
 <!doctype html>
 <html lang="en">
     <head>
+      <link rel="icon" type="image/png" href="/images/BlueTides_tiny.png">
       <link rel="stylesheet" href="./styles/main.css"/>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>JS2 Social — CA</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Seaweed+Script&family=Sail&family=Aguafina+Script&family=Kaushan+Script&family=Damion&family=Courgette&family=Sacramento&family=Lobster&family=Dancing+Script&display=swap" rel="stylesheet">
     </head>
 <body>
     <header class="site-header" style="display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
-      <div>
-        <h1 class="brand" style="text-align: center;">BlueTides</h1>
+      <div style="display: flex; flex-direction: row; justify-content: space-between;">
+        <div style="display: flex; flex-direction: row;">
+          <a href="#/feed" style="display: flex; flex-direction: row; text-decoration: none;">
+            <img src="/images/BlueTides.png" alt="BlueTides logo" style="height: 64px; vertical-align: middle; margin-right: 1rem;">
+            <h1 class="brand" style="font-size: 58px; color: #246B84; font-family: Courgette;">BlueTides</h1>
+          </a>
+        </div>
+        <div>
+          <a href="#/login" id="login-link">Login</a>
+          <button id="logout-btn" class="btn" style="margin-right:1rem; ">Logout</button>
+      </div>
       </div>
   <nav style="display: flex; justify-content: space-between; gap:1rem;">
     <div style="display: flex; justify-content: space-between; gap:1rem;">
       <a href="#/create" class="btn">New post</a>
-    </div>
-    <div>
-      <a href="#/login" id="login-link">Login</a>
-      <button id="logout-btn" class="btn" style="margin-right:1rem; ">Logout</button>
     </div>
   </nav>
 </header>

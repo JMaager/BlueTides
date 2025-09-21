@@ -3,6 +3,7 @@ import { renderLogin } from "./pages/login/index.js";
 import { renderRegister } from "./pages/register/index.js";
 import { renderFeed } from "./pages/feed/index.js";
 import { renderCreatePost } from "./pages/create/index.js";
+import { renderPost } from "./pages/post/index.js";
 import { spinner } from "./ui/spinner.js";
 import { flash } from "./ui/flash.js";
 
@@ -13,6 +14,10 @@ addRoute("#/login", renderLogin);
 addRoute("#/register", renderRegister);
 addRoute("#/feed", renderFeed);
 addRoute("#/create", renderCreatePost);
+addRoute("#/post/:id", (id) => {
+  console.log("Route triggered for post:", id); 
+  renderPost(id); 
+});
 
 startRouter();
 

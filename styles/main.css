@@ -13,3 +13,6 @@ body { margin:0; font:16px system-ui, sans-serif; background:var(--bg); color:va
 .error { color: #fca5a5; }
 a { color: white; text-decoration: none; } a:hover { text-decoration: underline; color: white; }
 .btn { color: white; text-decoration: none;} .btn:hover { text-decoration: underline; color: white; }
+
+h1 { font-family: "Lobster"; }
+.subtitle { font-family: "Lobster"; }
