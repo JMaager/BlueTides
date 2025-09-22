@@ -26,8 +26,8 @@ export async function renderPost(postId) {
     qs("#post-media").innerHTML = postData.media?.url
       ? `<img alt="${postData.media.alt || ''}" src="${postData.media.url}" style="max-width:100%;border-radius:8px;"/>`
       : "";
-    qs("#post-comments-count").textContent = `💬 ${postData._count?.comments || 0} Comments`;
-    qs("#post-reactions-count").textContent = `❤️ ${postData._count?.reactions || 0} Reactions`;
+    qs("#post-comments-count").textContent = `💬 ${postData._count?.comments || 0}`;
+    qs("#post-reactions-count").textContent = `❤️ ${postData._count?.reactions || 0}`;
 
     const commentsList = qs("#comments-list");
     if (postData.comments?.length) {

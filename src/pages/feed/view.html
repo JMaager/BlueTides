@@ -1,13 +1,19 @@
 <section class="stack">
-<div class="card">
-<form id="search-form" class="stack" role="search">
-<label>
-<div>Search posts</div>
-<input id="search-input" class="input" placeholder="Type to search…" />
-</label>
-</form>
-</div>
-
-
+  <nav class="tabs" id="feed-tabs">
+    <button class="tab is-active" data-feed="general">General</button>
+    <button class="tab" data-feed="following">Following</button>
+    <button class="tab" data-feed="personal">Yours</button>
+  </nav>
+  <div id="feed-list" class="stack"></div>
+</section>
+<section class="stack">
+    <div class="card">
+        <form id="search-form" class="stack" role="search">
+        <label>
+        <div>Search posts</div>
+        <input id="search-input" class="input" placeholder="Type to search…" />
+        </label>
+        </form>
+    </div>
 <section id="feed-list" class="stack" aria-live="polite"></section>
 </section>
