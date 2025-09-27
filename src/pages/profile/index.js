@@ -1,18 +1,40 @@
 import { qs, el } from "../../core/dom.js";
 import { getProfile, followProfile, unfollowProfile, updateProfile } from "../../api/profiles.js";
-import { getPostsByUser } from "../../api/posts.js";
+import { getPostsByUser, reactToPost } from "../../api/posts.js";
 import { flash } from "../../ui/flash.js";
 import { getAuth } from "../../api/auth.js";
 
-function postCard(p) {
-  return `
-    <article class="card">
-      <h4>${p.title ?? "Untitled"}</h4>
-      <p>${p.body ?? ""}</p>
-      ${p.media?.url ? `<img src="${p.media.url}" alt="${p.media.alt || ''}" style="max-width:100%;border-radius:8px;">` : ""}
-      <small class="muted">${new Date(p.created).toLocaleString()}</small>
-    </article>
-  `;
+function reactedKey() {
+  const me = getAuth()?.user?.name || "anon";
+  return `reacted:${me}`;
+}
+function getReactedSet() {
+  try { return new Set(JSON.parse(localStorage.getItem(reactedKey()) || "[]")); }
+  catch { return new Set(); }
+}
+function saveReactedSet(s) {
+  localStorage.setItem(reactedKey(), JSON.stringify(Array.from(s)));
+}
+function isReactedLocal(postId) {
+  return getReactedSet().has(String(postId));
+}
+function setReactedLocal(postId, on) {
+  const s = getReactedSet();
+  const id = String(postId);
+  if (on) s.add(id); else s.delete(id);
+  saveReactedSet(s);
+}
+function styleHeart(btn, active) {
+  if (!btn) return;
+  if (active) {
+    btn.style.backgroundColor = "#246B84";
+    btn.style.color = "white";
+    btn.style.borderRadius = "6px";
+    btn.style.padding = ".15rem .4rem";
+  } else {
+    btn.style.backgroundColor = "transparent";
+    btn.style.color = "inherit";
+  }
 }
 
 function showOverlay(title, itemsHtml) {
@@ -43,6 +65,57 @@ function renderUserList(title, users) {
     </li>
   `).join("");
   showOverlay(title, `<ul class="stack" style="gap:.5rem;">${list}</ul>`);
+}
+
+function postCard(p) {
+  const card = el("article", { className: "card" });
+  const title = p.title ?? "Untitled";
+  const body = p.body ?? "";
+  const media = p.media?.url ? `<img src="${p.media.url}" alt="${p.media.alt || ''}" style="max-width:100%;border-radius:8px;">` : "";
+  const commentsCount = p._count?.comments ?? 0;
+  const reactionsCount = p._count?.reactions ?? 0;
+  const reacted = isReactedLocal(p.id);
+
+  card.innerHTML = `
+    <h4 style="margin:0 0 .25rem 0;">${title}</h4>
+    <div class="muted" style="margin:.25rem 0 .75rem 0;">${new Date(p.created).toLocaleString()}</div>
+    <p>${body}</p>
+    ${media}
+    <footer class="row" style="justify-content:space-between;align-items:center;margin-top:1rem;">
+      <span class="muted">💬 ${commentsCount}</span>
+      <button class="reaction-btn" data-post-id="${p.id}" type="button" style="background:none;border:none;cursor:pointer;padding:0;">
+        ❤️ <span class="reaction-count">${reactionsCount}</span>
+      </button>
+    </footer>
+  `;
+
+  const heartBtn = card.querySelector(".reaction-btn");
+  styleHeart(heartBtn, reacted);
+
+  if (heartBtn) {
+    heartBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const pid = heartBtn.getAttribute("data-post-id");
+      const countEl = heartBtn.querySelector(".reaction-count");
+      const wasOn = isReactedLocal(pid);
+      try {
+        await reactToPost(pid, "❤️");
+        setReactedLocal(pid, !wasOn);
+        styleHeart(heartBtn, !wasOn);
+        const num = parseInt(countEl.textContent || "0", 10);
+        const next = wasOn ? Math.max(0, num - 1) : num + 1;
+        countEl.textContent = String(next);
+      } catch {
+        flash("Failed to react", "error");
+      }
+    });
+  }
+
+  card.addEventListener("click", () => {
+    location.hash = `#/post/${p.id}`;
+  });
+
+  return card;
 }
 
 let renderTicket = 0;
@@ -114,7 +187,8 @@ export async function renderProfile(username) {
     renderUserList("Following", following);
   });
 
-  postsEl.innerHTML = posts.map(postCard).join("");
+  postsEl.innerHTML = "";
+  posts.forEach(p => postsEl.append(postCard(p)));
 
   const auth = getAuth();
   const isMe = auth?.user?.name === profile.name;

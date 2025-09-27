@@ -1,8 +1,16 @@
 import { api } from "./client.js";
 
 /**
- * Register a new user
- * @param {{ name:string, email:string, password:string }} payload
+ * Register a new user.
+ *
+ * Sends a POST request to `/auth/register` and returns the API response.
+ *
+ * @param {{ name: string, email: string, password: string }} payload
+ *  The registration data. All fields are required.
+ * @returns {Promise<any>}
+ *  The parsed JSON response from the API.
+ * @throws {Error}
+ *  If a required field is missing or the request fails.
  */
 export function register(payload) {
   if (!payload.name || !payload.email || !payload.password) {
@@ -16,8 +24,16 @@ export function register(payload) {
 }
 
 /**
- * Log in a user, store token and user info, and ensure API key is created
- * @param {{ email:string, password:string }} payload
+ * Log in a user, persist auth data, and ensure an API key exists.
+ *
+ * On success, stores `{ token, user, "X-Noroff-API-Key" }` in localStorage under the "auth" key.
+ *
+ * @param {{ email: string, password: string }} payload
+ *  The login credentials. Both fields are required.
+ * @returns {Promise<any>}
+ *  The parsed JSON response from the API.
+ * @throws {Error}
+ *  If credentials are missing or a token/user cannot be derived from the response.
  */
 export async function login(payload) {
   if (!payload.email || !payload.password) {
@@ -40,20 +56,28 @@ export async function login(payload) {
 
   const apiKey = await ensureApiKey();
   const auth = JSON.parse(localStorage.getItem("auth") || "{}");
-  auth["X-Noroff-API-Key"] = apiKey; 
+  auth["X-Noroff-API-Key"] = apiKey;
   localStorage.setItem("auth", JSON.stringify(auth));
 
   return data;
 }
 
 /**
- * Create an API key if one does not already exist
+ * Ensure there is an API key stored for the current user.
+ *
+ * If a key is already present in localStorage under `"X-Noroff-API-Key"`, it is returned.
+ * Otherwise, requests a new key from `/auth/create-api-key`, stores it, and returns it.
+ *
+ * @returns {Promise<string>}
+ *  The API key.
+ * @throws {Error}
+ *  If the API key cannot be created or retrieved.
  */
 export async function ensureApiKey() {
   const store = JSON.parse(localStorage.getItem("auth") || "{}");
 
   if (store["X-Noroff-API-Key"]) {
-    return store["X-Noroff-API-Key"]; 
+    return store["X-Noroff-API-Key"];
   }
 
   const res = await api("/auth/create-api-key", { method: "POST", auth: true });
@@ -63,22 +87,30 @@ export async function ensureApiKey() {
     throw new Error("Failed to create API key.");
   }
 
-  store["X-Noroff-API-Key"] = key; 
+  store["X-Noroff-API-Key"] = key;
   localStorage.setItem("auth", JSON.stringify(store));
 
   return key;
 }
 
 /**
- * Clear stored auth info
+ * Log out the current user by clearing stored auth data.
+ *
+ * Removes the "auth" item from localStorage.
+ *
+ * @returns {void}
  */
 export function logout() {
   localStorage.removeItem("auth");
 }
 
 /**
- * Get the current stored auth info
- * @returns {{ token:string, user:any, apiKey?:string } | null}
+ * Get the current stored auth information.
+ *
+ * Reads and parses the "auth" item from localStorage.
+ *
+ * @returns {{ token: string, user: any, ["X-Noroff-API-Key"]?: string } | null}
+ *  The stored auth object, or `null` if not set or unparsable.
  */
 export function getAuth() {
   try {
