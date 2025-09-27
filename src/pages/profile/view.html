@@ -1,14 +1,16 @@
 <section class="stack">
-  <header class="card row gap">
-    <img id="profile-avatar" alt="" style="width:64px;height:64px;border-radius:50%" />
+  <header class="card row gap" style="align-items:center;">
+    <img id="profile-avatar" alt="Profile Avatar" style="width:64px;height:64px;border-radius:50%;cursor:pointer;" />
     <div class="stack">
-      <h2 id="profile-name"></h2>
+      <h2 id="profile-name">@undefined</h2>
       <p class="muted">
-        <span id="profile-counts"></span>
+        <span id="profile-posts-count">0 posts</span> ·
+        <a href="#" id="profile-followers-count" class="muted">0 followers</a> ·
+        <a href="#" id="profile-following-count" class="muted">0 following</a>
       </p>
     </div>
     <div style="margin-left:auto">
-      <button id="follow-btn" class="btn"></button>
+      <button id="follow-btn" class="btn">Follow</button>
     </div>
   </header>
 

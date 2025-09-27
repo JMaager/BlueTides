@@ -3,13 +3,62 @@
   <p id="post-author" class="muted"></p>
   <p id="post-body"></p>
   <div id="post-media"></div>
-  <footer style="margin-top: 1rem;">
-    <span id="post-comments-count" class="muted"></span>
-    <span id="post-reactions-count" class="muted"></span>
+
+  <footer class="row" style="margin-top:1rem;gap:.75rem;align-items:center;">
+    <button id="post-reaction-btn" class="btn" type="button" style="padding:.25rem .5rem;">
+      ❤️ <span id="post-reactions-count">0</span>
+    </button>
+    <span class="muted">·</span>
+    <span id="post-comments-count" class="muted">0</span>
   </footer>
-  <section id="comments-section" class="stack" style="margin-top: 2rem;">
+
+  <section id="comments-section" class="stack" style="margin-top: 1.25rem;">
     <h3>Comments</h3>
+
+    <form id="comment-form" class="stack" style="margin-bottom:1rem;">
+      <label>
+        <div>Add a comment</div>
+        <textarea id="comment-input" class="input" rows="3" required placeholder="Write a comment…"></textarea>
+      </label>
+      <div class="row" style="gap:.5rem;">
+        <button id="comment-submit" class="btn" type="submit">Post comment</button>
+        <p id="comment-error" class="error" role="alert" hidden></p>
+      </div>
+    </form>
+
     <div id="comments-list"></div>
   </section>
-  <button id="back-btn" class="btn" style="margin-top: 1rem;">Back</button>
+
+  <div class="row" style="margin-top:1rem;gap:.5rem;">
+    <button id="edit-btn" class="btn" style="display:none;">Edit</button>
+    <button id="back-btn" class="btn">Back</button>
+  </div>
+
+  <form id="edit-form" class="stack" style="display:none; margin-top:1rem;">
+    <label>
+      <div>Title</div>
+      <input name="title" class="input" />
+    </label>
+    <label>
+      <div>Body</div>
+      <textarea name="body" class="input" rows="5"></textarea>
+    </label>
+    <details>
+      <summary>Media</summary>
+      <label>
+        <div>Image URL</div>
+        <input name="mediaUrl" class="input" placeholder="https://..." />
+      </label>
+      <label>
+        <div>Alt text</div>
+        <input name="mediaAlt" class="input" placeholder="Describe the image" />
+      </label>
+    </details>
+    <div class="row" style="gap:.5rem;">
+      <button id="save-btn" class="btn" type="submit">Save</button>
+      <button id="cancel-edit-btn" class="btn" type="button">Cancel</button>
+      <button id="delete-btn" class="btn" type="button" style="display:none;background:#b91c1c;color:#fff;">Delete</button>
+    </div>
+    <p id="edit-error" class="error" role="alert" hidden></p>
+  </form>
 </section>

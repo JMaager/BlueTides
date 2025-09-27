@@ -14,14 +14,20 @@
     <header class="site-header" style="display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
       <div style="display: flex; flex-direction: row; justify-content: space-between;">
         <div style="display: flex; flex-direction: row;">
-          <a href="#/feed" style="display: flex; flex-direction: row; text-decoration: none;">
+          <a href="#/feed?tab=general" style="display: flex; flex-direction: row; text-decoration: none;">
             <img src="/images/BlueTides.png" alt="BlueTides logo" style="height: 64px; vertical-align: middle; margin-right: 1rem;">
             <h1 class="brand" style="font-size: 58px; color: #246B84; font-family: Courgette;">BlueTides</h1>
           </a>
         </div>
-        <div>
-          <a href="#/login" id="login-link">Login</a>
-          <button id="logout-btn" class="btn" style="margin-right:1rem; ">Logout</button>
+        <div style="position: relative;">
+          <button id="profile-btn" style="background: none; border: none; cursor: pointer;">
+            <img id="profile-avatar" src="https://placehold.co/64x64" alt="Profile" style="width: 48px; height: 48px; border-radius: 50%;" />
+            <a href="#/login" id="login-link">Login<span id="login-text" style="margin-left: 8px; font-size: 14px; color: #333; display: none;">Log in</span></a>
+          </button>
+          <div id="profile-dropdown" style="display: none; position: absolute; top: 60px; right: 0; background: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); z-index: 1000;">
+            <a href="#/profile" class="dropdown-item" style="display: block; padding: 8px 16px; text-decoration: none; color: #333;">View Profile</a>
+            <button id="logout-btn" class="dropdown-item" style="display: block; padding: 8px 16px; background: none; border: none; text-align: left; cursor: pointer; color: #333;">Log Out</button>
+          </div>
       </div>
       </div>
   <nav style="display: flex; justify-content: space-between; gap:1rem;">

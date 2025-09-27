@@ -5,6 +5,10 @@ import { api } from "./client.js";
  * @param {{ name:string, email:string, password:string }} payload
  */
 export function register(payload) {
+  if (!payload.name || !payload.email || !payload.password) {
+    throw new Error("Name, email, and password are required for registration.");
+  }
+
   return api("/auth/register", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -16,6 +20,10 @@ export function register(payload) {
  * @param {{ email:string, password:string }} payload
  */
 export async function login(payload) {
+  if (!payload.email || !payload.password) {
+    throw new Error("Email and password are required for login.");
+  }
+
   const data = await api("/auth/login", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -24,9 +32,16 @@ export async function login(payload) {
   const token = data?.data?.accessToken;
   const user = data?.data;
 
+  if (!token || !user) {
+    throw new Error("Failed to log in. Please check your credentials.");
+  }
+
   localStorage.setItem("auth", JSON.stringify({ token, user }));
 
-  await ensureApiKey(); // make sure API key is available
+  const apiKey = await ensureApiKey();
+  const auth = JSON.parse(localStorage.getItem("auth") || "{}");
+  auth["X-Noroff-API-Key"] = apiKey; 
+  localStorage.setItem("auth", JSON.stringify(auth));
 
   return data;
 }
@@ -37,12 +52,18 @@ export async function login(payload) {
 export async function ensureApiKey() {
   const store = JSON.parse(localStorage.getItem("auth") || "{}");
 
-  if (store.apiKey) return store.apiKey;
+  if (store["X-Noroff-API-Key"]) {
+    return store["X-Noroff-API-Key"]; 
+  }
 
   const res = await api("/auth/create-api-key", { method: "POST", auth: true });
   const key = res?.data?.key;
 
-  store.apiKey = key;
+  if (!key) {
+    throw new Error("Failed to create API key.");
+  }
+
+  store["X-Noroff-API-Key"] = key; 
   localStorage.setItem("auth", JSON.stringify(store));
 
   return key;
@@ -60,5 +81,10 @@ export function logout() {
  * @returns {{ token:string, user:any, apiKey?:string } | null}
  */
 export function getAuth() {
-  return JSON.parse(localStorage.getItem("auth") || "null");
+  try {
+    return JSON.parse(localStorage.getItem("auth") || "null");
+  } catch (e) {
+    console.error("Failed to parse auth data:", e);
+    return null;
+  }
 }

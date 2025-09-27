@@ -1,52 +1,88 @@
 import { api } from "./client.js";
 
-export function listPosts({ limit = 20, offset = 0, query = "" } = {}) {
-const q = query ? `&q=${encodeURIComponent(query)}` : "";
-return api(`/social/posts?limit=${limit}&offset=${offset}&_author=true&_reactions=true${q}`, { auth: true });
+export function listPosts({ limit = 20, page = 1, offset = 0, query = "" } = {}) {
+  if (!page && offset) page = Math.floor(offset / limit) + 1;
+  const p = new URLSearchParams({
+    limit,
+    page,
+    _author: "true",
+    _reactions: "true",
+    sort: "created",
+    sortOrder: "desc",
+  });
+  if (query) p.set("q", query);
+  return api(`/social/posts?${p.toString()}`, { auth: true });
 }
-
 
 export function createPost(payload) {
   return api(`/social/posts`, { method: "POST", auth: true, body: JSON.stringify(payload) });
 }
 
-export async function getPost(postId) {
+export function getPost(postId) {
   return api(`/social/posts/${postId}?_author=true&_comments=true&_reactions=true`, { auth: true });
 }
 
-const API = "https://api.noroff.dev/api/v1/social";
-
-function authHeaders() {
-  const token = localStorage.getItem("token");
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
-
-async function authFetch(url, options = {}) {
-  const res = await fetch(url, { ...options, headers: authHeaders() });
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-  return res.json();
-}
-
-export async function getPostsAll({ limit = 25, offset = 0 } = {}) {
+export function getPostsAll({ limit = 15, page = 1 } = {}) {
   const p = new URLSearchParams({
-    limit, offset, _author: "true", _comments: "true", _reactions: "true",
+    limit,
+    page,
+    _author: "true",
+    _comments: "true",
+    _reactions: "true",
+    sort: "created",
+    sortOrder: "desc",
   });
-  return authFetch(`${API}/posts?${p.toString()}`);
+  return api(`/social/posts?${p.toString()}`, { auth: true });
 }
 
-export async function getPostsFollowing({ limit = 25, offset = 0 } = {}) {
+export function searchPosts({ query = "", limit = 15, page = 1 } = {}) {
   const p = new URLSearchParams({
-    limit, offset, _author: "true", _comments: "true", _reactions: "true",
+    q: query,
+    limit,
+    page,
+    _author: "true",
+    _comments: "true",
+    _reactions: "true",
+    sort: "created",
+    sortOrder: "desc",
   });
-  return authFetch(`${API}/posts/following?${p.toString()}`); 
+  return api(`/social/posts/search?${p.toString()}`, { auth: true });
 }
 
-export async function getPostsByUser(name, { limit = 25, offset = 0 } = {}) {
+export function getPostsFollowing({ limit = 15, page = 1 } = {}) {
   const p = new URLSearchParams({
-    limit, offset, _author: "true", _comments: "true", _reactions: "true",
+    limit,
+    page,
+    _author: "true",
+    _comments: "true",
+    _reactions: "true",
+    sort: "created",
+    sortOrder: "desc",
   });
-  return authFetch(`${API}/profiles/${encodeURIComponent(name)}/posts?${p}`);
+  return api(`/social/posts/following?${p.toString()}`, { auth: true });
+}
+
+export function getPostsByUser(name, { limit = 15, page = 1 } = {}) {
+  const p = new URLSearchParams({
+    limit, page, _author: "true", _comments: "true", _reactions: "true", sort: "created", sortOrder: "desc",
+  });
+  return api(`/social/profiles/${encodeURIComponent(name)}/posts?${p.toString()}`, { auth: true })
+    .then(r => r.data);
+}
+
+export function updatePost(id, payload) {
+  return api(`/social/posts/${id}`, { method: "PUT", auth: true, body: JSON.stringify(payload) });
+}
+
+export function deletePost(id) {
+  return api(`/social/posts/${id}`, { method: "DELETE", auth: true });
+}
+
+export function reactToPost(id, symbol = "❤️") {
+  return api(`/social/posts/${id}/react/${encodeURIComponent(symbol)}`, { method: "PUT", auth: true });
+}
+
+export function commentOnPost(id, body, replyToId) {
+  const payload = replyToId ? { body, replyToId } : { body };
+  return api(`/social/posts/${id}/comment`, { method: "POST", auth: true, body: JSON.stringify(payload) });
 }

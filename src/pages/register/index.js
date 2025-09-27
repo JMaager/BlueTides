@@ -21,35 +21,31 @@ const err = qs("#register-error");
 
 
 form.addEventListener("submit", async (e) => {
-e.preventDefault();
-err.hidden = true; err.textContent = "";
+  e.preventDefault();
+  err.hidden = true; err.textContent = "";
 
+  const fd = new FormData(form);
+  const name = fd.get("name").toString().trim();
+  const email = fd.get("email").toString().trim();
+  const password = fd.get("password").toString();
 
-const fd = new FormData(form);
-const name = fd.get("name").toString().trim();
-const email = fd.get("email").toString().trim();
-const password = fd.get("password").toString();
+  if (!validNoroffEmail(email)) {
+    err.textContent = "Email must end with @noroff.no or @stud.noroff.no";
+    err.hidden = false; return;
+  }
 
-
-if (!validNoroffEmail(email)) {
-err.textContent = "Email must end with @noroff.no or @stud.noroff.no";
-err.hidden = false; return;
-}
-
-
-const btn = form.querySelector("button");
-btn.disabled = true; btn.textContent = "Creating…";
-try {
-await register({ name, email, password });
-// Auto-login for convenience
-await login({ email, password });
-location.hash = "#/feed";
-} catch (e) {
-err.textContent = e.message || "Registration failed";
-err.hidden = false;
-} finally {
-btn.disabled = false; btn.textContent = "Create account";
-}
+  const btn = form.querySelector("button");
+  btn.disabled = true; btn.textContent = "Creating…";
+  try {
+    await register({ name, email, password });
+    await login({ email, password }); // Auto-login after registration
+    location.hash = "#/feed";
+  } catch (e) {
+    err.textContent = e.message || "Registration failed";
+    err.hidden = false;
+  } finally {
+    btn.disabled = false; btn.textContent = "Create account";
+  }
 });
 });
 }

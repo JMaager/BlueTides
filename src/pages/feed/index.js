@@ -1,150 +1,264 @@
-import { qs, el, qsa } from "../../core/dom.js";
-import { listPosts } from "../../api/posts.js";
+import { qs, el } from "../../core/dom.js";
 import { getAuth } from "../../api/auth.js";
-import { spinner } from "../../ui/spinner.js";
 import { flash } from "../../ui/flash.js";
-import { getPostsAll, getPostsFollowing, getPostsByUser } from "../../api/posts.js";
+import { getPostsAll, getPostsFollowing, searchPosts, reactToPost } from "../../api/posts.js";
 
-function postCard(p) {
+const postsPerPage = 15;
+let currentPage = 1;
+let totalPages = 1;
+let currentQuery = "";
+let currentFeed = "general";
+
+function reactedKey() {
+  const me = getAuth()?.user?.name || "anon";
+  return `reacted:${me}`;
+}
+function getReactedSet() {
+  try { return new Set(JSON.parse(localStorage.getItem(reactedKey()) || "[]")); }
+  catch { return new Set(); }
+}
+function saveReactedSet(s) {
+  localStorage.setItem(reactedKey(), JSON.stringify(Array.from(s)));
+}
+function isReactedLocal(postId) {
+  return getReactedSet().has(String(postId));
+}
+function setReactedLocal(postId, on) {
+  const s = getReactedSet();
+  const id = String(postId);
+  if (on) s.add(id); else s.delete(id);
+  saveReactedSet(s);
+}
+
+async function fetchPosts(page = 1) {
+  try {
+    let res;
+    if (currentFeed === "general") {
+      res = currentQuery
+        ? await searchPosts({ query: currentQuery, limit: postsPerPage, page })
+        : await getPostsAll({ limit: postsPerPage, page });
+    } else {
+      res = await getPostsFollowing({ limit: postsPerPage, page });
+    }
+
+    if (!res || !res.data) throw new Error("Failed to fetch posts");
+
+    currentPage = page;
+    let posts = res.data;
+
+    if (currentFeed === "following" && currentQuery) {
+      const q = currentQuery.toLowerCase();
+      posts = posts.filter(p =>
+        (p.title || "").toLowerCase().includes(q) ||
+        (p.body || "").toLowerCase().includes(q)
+      );
+      totalPages = res.meta?.pageCount || 1;
+    } else {
+      totalPages = res.meta?.pageCount || 1;
+    }
+
+    displayPosts(posts);
+    renderPagination(currentPage);
+
+    window.scrollTo({ top: 0, behavior: "instant" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    flash("Failed to load posts. Please try again later.", "error");
+  }
+}
+
+function displayPosts(posts) {
+  const container = qs("#feed-list");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (!posts.length) {
+    container.innerHTML = "<p>No posts found.</p>";
+    return;
+  }
+
+  posts.forEach((post) => {
+    const postElement = postCard(post);
+    container.appendChild(postElement);
+  });
+}
+
+function styleHeart(btn, active) {
+  if (!btn) return;
+  if (active) {
+    btn.style.backgroundColor = "#246B84";
+    btn.style.color = "white";
+    btn.style.borderRadius = "6px";
+    btn.style.padding = ".15rem .4rem";
+  } else {
+    btn.style.backgroundColor = "transparent";
+    btn.style.color = "inherit";
+  }
+}
+
+function postCard(post) {
   const card = el("article", { className: "card" });
-  const title = p.title || "Untitled";
-  const author = p.author?.name || "Unknown";
-  const body = p.body || "";
-  const media = p.media?.url ? `<img alt="${p.media.alt || ''}" src="${p.media.url}" style="max-width:100%;border-radius:8px;"/>` : "";
-  const commentsCount = p._count?.comments || 0;
-  const reactionsCount = p._count?.reactions || 0;
+  const title = post.title || "Untitled";
+  const author = post.author?.name || "Unknown";
+  const body = post.body || "";
+  const media = post.media?.url
+    ? `<img alt="${post.media.alt || ''}" src="${post.media.url}" style="max-width:100%;border-radius:8px;"/>`
+    : "";
+  const commentsCount = post._count?.comments || 0;
+  const reactionsCount = post._count?.reactions || 0;
+  const reacted = isReactedLocal(post.id);
 
   card.innerHTML = `
     <header style="display:flex;justify-content:space-between;align-items:center;">
       <h3 style="margin:0;font-size:1.05rem;">${title}</h3>
-      <small class="muted">by ${author}</small>
+      <small class="muted">
+        <a href="#/profile/${encodeURIComponent(author)}" data-link style="text-decoration: none; color: #246B84;">by ${author}</a>
+      </small>
     </header>
-    <div class="muted" style="margin:.25rem 0 .75rem 0;">${new Date(p.created).toLocaleString()}</div>
+    <div class="muted" style="margin:.25rem 0 .75rem 0;">${new Date(post.created).toLocaleString()}</div>
     <div>${body}</div>
     <div style="margin-top:.75rem;">${media}</div>
-    <footer style="display:flex;justify-content:space-between;align-items:center;margin-top:1rem;">
+    <footer class="row" style="justify-content:space-between;align-items:center;margin-top:1rem;">
       <span class="muted">💬 ${commentsCount}</span>
-      <span class="muted">❤️ ${reactionsCount}</span>
+      <button class="reaction-btn" data-post-id="${post.id}" type="button" style="background:none;border:none;cursor:pointer;padding:0;">
+        ❤️ <span class="reaction-count">${reactionsCount}</span>
+      </button>
     </footer>
   `;
 
-card.addEventListener("click", () => {
-    location.hash = `#/post/${p.id}`;
-});
+  const profileLink = card.querySelector("a[data-link]");
+  if (profileLink) {
+    profileLink.addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
+  }
+
+  const heartBtn = card.querySelector(".reaction-btn");
+  styleHeart(heartBtn, reacted);
+
+  if (heartBtn) {
+    heartBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const pid = heartBtn.getAttribute("data-post-id");
+      const countEl = heartBtn.querySelector(".reaction-count");
+      const wasOn = isReactedLocal(pid);
+      try {
+        await reactToPost(pid, "❤️");
+        setReactedLocal(pid, !wasOn);
+        styleHeart(heartBtn, !wasOn);
+        const num = parseInt(countEl.textContent || "0", 10);
+        const next = wasOn ? Math.max(0, num - 1) : num + 1;
+        countEl.textContent = String(next);
+      } catch {
+        flash("Failed to react", "error");
+      } finally {
+        fetchPosts(currentPage);
+      }
+    });
+  }
+
+  card.addEventListener("click", () => {
+    location.hash = `#/post/${post.id}`;
+  });
 
   return card;
 }
 
+function renderPagination(page) {
+  let paginationContainer = qs("#pagination-container");
+  if (!paginationContainer) {
+    paginationContainer = el("div", { id: "pagination-container" });
+    qs("#feed-list")?.after(paginationContainer);
+  }
 
-let currentQuery = "";
-let isLoading = false;
+  paginationContainer.innerHTML = "";
 
+  const startPage = Math.max(1, page - 2);
+  const endPage = Math.min(totalPages, startPage + 4);
 
-async function loadAndRender(container, { query = "" } = {}) {
-  if (isLoading) return;
-  isLoading = true;
-  container.innerHTML = "";
-  container.append(spinner("Loading posts…"));
-  try {
-    const res = await listPosts({ limit: 20, offset: 0, query });
-    const items = res?.data || [];
-    container.innerHTML = "";
-    if (!items.length) {
-      container.append(el("div", { className: "card", innerHTML: "No posts found." }));
-      return;
+  const prevButton = el("button", {
+    className: "btn",
+    innerHTML: "← Previous",
+    disabled: page === 1,
+    type: "button",
+  });
+  prevButton.addEventListener("click", () => fetchPosts(page - 1));
+  paginationContainer.appendChild(prevButton);
+
+  for (let i = startPage; i <= endPage; i++) {
+    const pageButton = el("button", {
+      className: "btn",
+      innerHTML: i,
+      type: "button",
+    });
+    if (i === page) {
+      pageButton.setAttribute("aria-current", "page");
+      pageButton.style.backgroundColor = "#246B84";
+      pageButton.style.color = "white";
+      pageButton.style.border = "none";
     }
-    items.forEach((p) => container.append(postCard(p)));
-  } catch (e) {
-    container.innerHTML = "";
-    flash(e.message || "Failed to load posts", "error");
-    container.append(el("div", { className: "card", innerHTML: `Error: ${e.message}` }));
-  } finally {
-    isLoading = false;
+    pageButton.addEventListener("click", () => fetchPosts(i));
+    paginationContainer.appendChild(pageButton);
   }
-}
 
-
-export function renderFeed() {
-if (!getAuth()?.token) { location.hash = "#/login"; return; }
-
-
-fetch("./src/pages/feed/view.html").then(r => r.text()).then((html) => {
-const app = qs("#app");
-app.innerHTML = html;
-
-
-const list = qs("#feed-list");
-const input = qs("#search-input");
-
-
-loadAndRender(list, { query: currentQuery });
-
-
-let t;
-input.addEventListener("input", () => {
-currentQuery = input.value.trim();
-clearTimeout(t);
-t = setTimeout(() => loadAndRender(list, { query: currentQuery }), 300);
-});
-});
-}
-
-
-function activeUserName() {
-  try { return JSON.parse(localStorage.getItem("profile"))?.name; }
-  catch { return null; }
-}
-
-function card(post) {
-  const author = post.author?.name || "Unknown";
-  const media = post.media ? `<img src="${post.media}" alt="" style="max-width:100%;border-radius:8px" />` : "";
-  return `
-    <article class="card">
-      <header class="row gap">
-        <a href="#/u/${encodeURIComponent(author)}" data-link class="muted">@${author}</a>
-        <span class="muted" style="margin-left:auto">${new Date(post.created).toLocaleString()}</span>
-      </header>
-      <h3>${post.title ?? "Untitled"}</h3>
-      <p>${post.body ?? ""}</p>
-      ${media}
-      <footer class="muted">❤️ ${post._count?.reactions ?? 0} · 💬 ${post._count?.comments ?? 0}</footer>
-    </article>
-  `;
-}
-
-async function loadFeed(mode, listEl) {
-  listEl.innerHTML = `<p class="muted">Loading…</p>`;
-  let posts = [];
-  if (mode === "general") posts = await getPostsAll({ limit: 50 });
-  if (mode === "following") posts = await getPostsFollowing({ limit: 50 });
-  if (mode === "personal") {
-    const me = activeUserName();
-    if (!me) return (listEl.innerHTML = `<p class="muted">Log in to see your posts.</p>`);
-    posts = await getPostsByUser(me, { limit: 50 });
-  }
-  listEl.innerHTML = posts.map(card).join("");
+  const nextButton = el("button", {
+    className: "btn",
+    innerHTML: "Next →",
+    disabled: page === totalPages,
+    type: "button",
+  });
+  nextButton.addEventListener("click", () => fetchPosts(page + 1));
+  paginationContainer.appendChild(nextButton);
 }
 
 export async function renderFeed() {
+  if (!getAuth()?.token) {
+    location.hash = "#/login";
+    return;
+  }
+
   const app = qs("#app");
   const res = await fetch("/src/pages/feed/view.html");
+  if (!res.ok) {
+    flash("Failed to load feed view", "error");
+    return;
+  }
   app.innerHTML = await res.text();
 
-  const listEl = qs("#feed-list");
-  const tabs = qsa("#feed-tabs [data-feed]");
+  if (!qs("#pagination-container")) {
+    const paginationContainer = el("div", { id: "pagination-container" });
+    qs("#feed-list")?.after(paginationContainer);
+  }
 
-  const urlTab = new URLSearchParams(location.hash.split("?")[1]).get("tab");
-  const initial = urlTab || "general";
-
-  tabs.forEach(btn => {
-    btn.classList.toggle("is-active", btn.dataset.feed === initial);
-    btn.addEventListener("click", () => {
-      tabs.forEach(b => b.classList.remove("is-active"));
-      btn.classList.add("is-active");
-      history.replaceState({}, "", `#/feed?tab=${btn.dataset.feed}`);
-      loadFeed(btn.dataset.feed, listEl);
+  const feedSelect = qs("#feed-select");
+  if (feedSelect) {
+    currentFeed = feedSelect.value;
+    feedSelect.addEventListener("change", () => {
+      currentFeed = feedSelect.value;
+      fetchPosts(1);
     });
-  });
+  }
 
-  await loadFeed(initial, listEl);
+  const input = qs("#search-input");
+  const form = qs("#search-form");
+  if (input) input.value = currentQuery;
+
+  if (form && input) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      currentQuery = input.value.trim();
+      fetchPosts(1);
+    });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        currentQuery = input.value.trim();
+        fetchPosts(1);
+      }
+    });
+  }
+
+  fetchPosts(currentPage);
 }
