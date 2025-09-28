@@ -4,6 +4,7 @@ A lightweight single-page social app built with plain HTML/CSS/JS (no framework)
 It talks to the **Noroff v2 Social API** for authentication, posts, profiles, reactions and comments.
 
 Live page - https://bluetides.netlify.app
+
 ## Features
 
 - Email/password **auth** with JWT (stored locally)  
