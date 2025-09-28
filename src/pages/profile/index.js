@@ -141,7 +141,7 @@ export async function renderProfile(username) {
   const postsCountEl = qs("#profile-posts-count", app);
   const followersCountEl = qs("#profile-followers-count", app);
   const followingCountEl = qs("#profile-following-count", app);
-  const bioEl = qs("#profile-bio", app);
+  let bioEl = qs("#profile-bio", app);
   const postsEl = qs("#profile-posts", app);
   const followBtn = qs("#follow-btn", app);
   if (!nameEl || !avatarEl || !postsCountEl || !followersCountEl || !followingCountEl || !postsEl || !followBtn || !bioEl) {
@@ -197,9 +197,56 @@ export async function renderProfile(username) {
   const isMe = auth?.user?.name === profile.name;
 
   if (isMe) {
+    const startBioEdit = () => {
+      if (!bioEl || bioEl.dataset.editing === "1") return;
+      bioEl.dataset.editing = "1";
+      const current = bioEl.textContent === "No bio yet." ? "" : bioEl.textContent;
+      const wrap = el("div", {});
+      wrap.innerHTML = `
+        <textarea id="bio-input" class="input" rows="4" placeholder="Write your bio...">${current}</textarea>
+        <div class="row" style="gap:.5rem;margin-top:.5rem;">
+          <button id="bio-save" class="btn">Save</button>
+          <button id="bio-cancel" class="btn muted">Cancel</button>
+        </div>
+      `;
+      bioEl.replaceWith(wrap);
+      const input = qs("#bio-input", wrap);
+      input.focus();
+      qs("#bio-cancel", wrap).addEventListener("click", () => {
+        const p = el("p", { id: "profile-bio", className: "muted" });
+        p.textContent = profile.bio?.trim() || "No bio yet.";
+        wrap.replaceWith(p);
+        bioEl = p;
+        bioEl.style.cursor = "pointer";
+        bioEl.title = "Click to edit bio";
+        bioEl.addEventListener("click", startBioEdit, { once: true });
+      });
+      qs("#bio-save", wrap).addEventListener("click", async () => {
+        const val = input.value.trim();
+        try {
+          await updateProfile({ bio: val });
+          profile.bio = val;
+          flash("Bio updated", "success");
+        } catch (e2) {
+          flash(e2.message || "Failed to update bio", "error");
+        }
+        const p = el("p", { id: "profile-bio", className: "muted" });
+        p.textContent = profile.bio?.trim() || "No bio yet.";
+        wrap.replaceWith(p);
+        bioEl = p;
+        bioEl.style.cursor = "pointer";
+        bioEl.title = "Click to edit bio";
+        bioEl.addEventListener("click", startBioEdit, { once: true });
+      });
+    };
+
     followBtn.style.display = "none";
     avatarEl.style.cursor = "pointer";
     avatarEl.title = "Click to change your profile picture";
+    bioEl.style.cursor = "pointer";
+    bioEl.title = "Click to edit bio";
+    bioEl.addEventListener("click", startBioEdit, { once: true });
+
     avatarEl.addEventListener("click", () => {
       const overlay = el("div", { className: "overlay", style: "position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:9999;" });
       overlay.innerHTML = `
@@ -221,7 +268,7 @@ export async function renderProfile(username) {
         const newAvatarAlt = qs("#new-avatar-alt", overlay).value.trim();
         if (!newAvatarUrl) { flash("Please enter a valid URL.", "error"); return; }
         try {
-          await updateProfile({ url: newAvatarUrl, alt: newAvatarAlt || "" });
+          await updateProfile({ avatar: { url: newAvatarUrl, alt: newAvatarAlt || "" } });
           avatarEl.src = newAvatarUrl;
           flash("Profile picture updated successfully!", "success");
           overlay.remove();

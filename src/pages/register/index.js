@@ -38,7 +38,7 @@ form.addEventListener("submit", async (e) => {
   btn.disabled = true; btn.textContent = "Creating…";
   try {
     await register({ name, email, password });
-    await login({ email, password }); // Auto-login after registration
+    await login({ email, password }); 
     location.hash = "#/feed";
   } catch (e) {
     err.textContent = e.message || "Registration failed";
