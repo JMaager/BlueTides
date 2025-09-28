@@ -5,7 +5,7 @@
       <link rel="stylesheet" href="./styles/main.css"/>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>JS2 Social — CA</title>
+        <title>BlueTides</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Seaweed+Script&family=Sail&family=Aguafina+Script&family=Kaushan+Script&family=Damion&family=Courgette&family=Sacramento&family=Lobster&family=Dancing+Script&display=swap" rel="stylesheet">
@@ -19,7 +19,12 @@
             <h1 class="brand" style="font-size: 58px; color: #246B84; font-family: Courgette;">BlueTides</h1>
           </a>
         </div>
-        <div style="position: relative;">
+        <div style="position: relative; display: flex; flex-direction: row; gap: 1rem;">
+          <nav style="display: flex; justify-content: center; align-self: center; gap:1rem; height: 3rem;">
+            <div style="display: flex; justify-content: space-between; gap:1rem;">
+              <a href="#/create" class="btn">New post</a>
+            </div>
+          </nav>
           <button id="profile-btn" style="background: none; border: none; cursor: pointer;">
             <img id="profile-avatar" src="https://placehold.co/64x64" alt="Profile" style="width: 48px; height: 48px; border-radius: 50%;" />
             <a href="#/login" id="login-link">Login<span id="login-text" style="margin-left: 8px; font-size: 14px; color: #333; display: none;">Log in</span></a>
@@ -30,13 +35,10 @@
           </div>
       </div>
       </div>
-  <nav style="display: flex; justify-content: space-between; gap:1rem;">
-    <div style="display: flex; justify-content: space-between; gap:1rem;">
-      <a href="#/create" class="btn">New post</a>
-    </div>
-  </nav>
 </header>
-    <main id="app" class="container" aria-live="polite"></main>
-    <script type="module" src="./src/main.js"></script>
+<main id="app" class="container" aria-live="polite">
+
+</main>
+<script type="module" src="./src/main.js"></script>
 </body>
 </html>

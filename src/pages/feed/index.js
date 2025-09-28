@@ -117,14 +117,17 @@ function postCard(post) {
         <a href="#/profile/${encodeURIComponent(author)}" data-link style="text-decoration: none; color: #246B84;">by ${author}</a>
       </small>
     </header>
-    <div class="muted" style="margin:.25rem 0 .75rem 0;">${new Date(post.created).toLocaleString()}</div>
-    <div>${body}</div>
+    <div style="margin-top: .75rem;">${body}</div>
     <div style="margin-top:.75rem;">${media}</div>
-    <footer class="row" style="justify-content:space-between;align-items:center;margin-top:1rem;">
-      <span class="muted">💬 ${commentsCount}</span>
-      <button class="reaction-btn" data-post-id="${post.id}" type="button" style="background:none;border:none;cursor:pointer;padding:0;">
-        ❤️ <span class="reaction-count">${reactionsCount}</span>
-      </button>
+    <footer class="row" style="justify-content:space-between;align-items:center;margin-top:1rem; margin-bottom: 0; display:flex; flex-direction: row;">
+      <div style="display:flex; flex-direction:row; gap: 1rem;>
+        <span class="muted">💬 ${commentsCount}</span>
+        <button class="reaction-btn" data-post-id="${post.id}" type="button" style="background:none;border:none;cursor:pointer;padding:0;">
+          ❤️ <span class="reaction-count">${reactionsCount}</span>
+        </button>
+        </div>
+        <span class="muted" style="margin:0rem 0 0 0;">${new Date(post.created).toLocaleString()}</span>
+      
     </footer>
   `;
 

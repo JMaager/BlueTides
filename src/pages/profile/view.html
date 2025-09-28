@@ -1,19 +1,28 @@
 <section class="stack">
   <header class="card row gap" style="align-items:center;">
-    <img id="profile-avatar" alt="Profile Avatar" style="width:64px;height:64px;border-radius:50%;cursor:pointer;" />
-    <div class="stack">
-      <h2 id="profile-name">@undefined</h2>
-      <p class="muted">
-        <span id="profile-posts-count">0 posts</span> ·
-        <a href="#" id="profile-followers-count" class="muted">0 followers</a> ·
-        <a href="#" id="profile-following-count" class="muted">0 following</a>
-      </p>
+    <div class="profile-banner" style="display: flex; flex-direction: row; gap: 1rem; justify-content: space-between;">
+      <div class="profile-banner-content" style="display: flex; flex-direction: row; gap: 1rem;">
+        <img id="profile-avatar" alt="Profile Avatar" style="width:64px;height:64px;border-radius:50%;cursor:pointer;" />
+        <h2 id="profile-name">@undefined</h2>
+      </div>
+      <div>
+        <div class="profile-banner-content" style="padding: 0; display: flex; align-items: center; justify-content: center; height: 100%;">
+          <button id="follow-btn" class="btn">Follow</button>
+        </div>
+      </div>
+      <div class="stack profile-banner-content">
+        <p class="muted" style="display: flex; flex-direction: row; gap: 1rem; margin: 0 auto; align-items: center; justify-content: center; height: 100%;">
+          <span id="profile-posts-count">0 posts</span> ·
+          <a href="#" id="profile-followers-count" class="muted">0 followers</a> ·
+          <a href="#" id="profile-following-count" class="muted">0 following</a>
+        </p>
+      </div>
     </div>
-    <div style="margin-left:auto">
-      <button id="follow-btn" class="btn">Follow</button>
-    </div>
+    <section id="profile-bio-card" class="card" style="margin-top: 1rem;">
+      <h3>Bio</h3>
+      <p id="profile-bio" class="muted">No bio yet.</p>
+    </section>
   </header>
-
   <h3>Posts</h3>
   <div id="profile-posts" class="stack"></div>
 </section>

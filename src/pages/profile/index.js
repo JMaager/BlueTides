@@ -141,9 +141,10 @@ export async function renderProfile(username) {
   const postsCountEl = qs("#profile-posts-count", app);
   const followersCountEl = qs("#profile-followers-count", app);
   const followingCountEl = qs("#profile-following-count", app);
+  const bioEl = qs("#profile-bio", app);
   const postsEl = qs("#profile-posts", app);
   const followBtn = qs("#follow-btn", app);
-  if (!nameEl || !avatarEl || !postsCountEl || !followersCountEl || !followingCountEl || !postsEl || !followBtn) {
+  if (!nameEl || !avatarEl || !postsCountEl || !followersCountEl || !followingCountEl || !postsEl || !followBtn || !bioEl) {
     flash("Profile template missing required elements", "error");
     return;
   }
@@ -167,6 +168,8 @@ export async function renderProfile(username) {
   nameEl.textContent = `@${profile.name || username}`;
   avatarEl.src = profile.avatar?.url || "https://placehold.co/128x128";
   avatarEl.alt = profile.avatar?.alt || profile.name || username;
+
+  bioEl.textContent = profile.bio?.trim() || "No bio yet.";
 
   const followers = Array.isArray(profile.followers) ? profile.followers : [];
   const following = Array.isArray(profile.following) ? profile.following : [];
