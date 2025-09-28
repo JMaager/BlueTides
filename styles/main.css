@@ -1,4 +1,4 @@
-:root { --bg:#0b0e14; --card:#121826; --text:#e6e6e6; --muted:#a1a1aa; --acc:#2f7bb5; }
+:root { --bg:#0b0e14; --card:#121826; --text:#e6e6e6; --muted:#a1a1aa; --acc:#00566c; }
 * { box-sizing: border-box; }
 
 body { margin:0; font:16px system-ui, sans-serif; background:var(--bg); color:var(--text); }
