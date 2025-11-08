@@ -1,7 +1,12 @@
 import { qs, el } from "../../core/dom.js";
 import { getAuth } from "../../api/auth.js";
 import { flash } from "../../ui/flash.js";
-import { getPostsAll, getPostsFollowing, searchPosts, reactToPost } from "../../api/posts.js";
+import {
+  getPostsAll,
+  getPostsFollowing,
+  searchPosts,
+  reactToPost,
+} from "../../api/posts.js";
 
 const postsPerPage = 15;
 let currentPage = 1;
@@ -14,8 +19,11 @@ function reactedKey() {
   return `reacted:${me}`;
 }
 function getReactedSet() {
-  try { return new Set(JSON.parse(localStorage.getItem(reactedKey()) || "[]")); }
-  catch { return new Set(); }
+  try {
+    return new Set(JSON.parse(localStorage.getItem(reactedKey()) || "[]"));
+  } catch {
+    return new Set();
+  }
 }
 function saveReactedSet(s) {
   localStorage.setItem(reactedKey(), JSON.stringify(Array.from(s)));
@@ -26,7 +34,8 @@ function isReactedLocal(postId) {
 function setReactedLocal(postId, on) {
   const s = getReactedSet();
   const id = String(postId);
-  if (on) s.add(id); else s.delete(id);
+  if (on) s.add(id);
+  else s.delete(id);
   saveReactedSet(s);
 }
 
@@ -48,9 +57,10 @@ async function fetchPosts(page = 1) {
 
     if (currentFeed === "following" && currentQuery) {
       const q = currentQuery.toLowerCase();
-      posts = posts.filter(p =>
-        (p.title || "").toLowerCase().includes(q) ||
-        (p.body || "").toLowerCase().includes(q)
+      posts = posts.filter(
+        (p) =>
+          (p.title || "").toLowerCase().includes(q) ||
+          (p.body || "").toLowerCase().includes(q)
       );
       totalPages = res.meta?.pageCount || 1;
     } else {
@@ -88,11 +98,9 @@ function displayPosts(posts) {
 function styleHeart(btn, active) {
   if (!btn) return;
   if (active) {
-    btn.style.backgroundColor = "#246B84";
-    btn.style.color = "white";
-    btn.style.borderRadius = "6px";
-    btn.style.padding = ".15rem .4rem";
+    btn.className = "btn-custom";
   } else {
+    btn.className = "";
     btn.style.backgroundColor = "transparent";
     btn.style.color = "inherit";
   }
@@ -104,30 +112,35 @@ function postCard(post) {
   const author = post.author?.name || "Unknown";
   const body = post.body || "";
   const media = post.media?.url
-    ? `<img alt="${post.media.alt || ''}" src="${post.media.url}" style="max-width:100%;border-radius:8px;"/>`
+    ? `<img alt="${post.media.alt || ""}" src="${
+        post.media.url
+      }" class="img-fluid rounded"/>`
     : "";
   const commentsCount = post._count?.comments || 0;
   const reactionsCount = post._count?.reactions || 0;
   const reacted = isReactedLocal(post.id);
 
   card.innerHTML = `
-    <header style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0;font-size:1.05rem;">${title}</h3>
-      <small class="muted">
-        <a href="#/profile/${encodeURIComponent(author)}" data-link style="text-decoration: none; color: #246B84;">by ${author}</a>
+    <header class="d-flex justify-content-between align-items-center">
+      <h3 class="mb-0 post-title">${title}</h3>
+      <small class="text-muted">
+        <a href="#/profile/${encodeURIComponent(
+          author
+        )}" data-link class="text-decoration-none author-link">by ${author}</a>
       </small>
     </header>
-    <div style="margin-top: .75rem;">${body}</div>
-    <div style="margin-top:.75rem;">${media}</div>
-    <footer class="row" style="justify-content:space-between;align-items:center;margin-top:1rem; margin-bottom: 0; display:flex; flex-direction: row;">
-      <div style="display:flex; flex-direction:row; gap: 1rem;>
-        <span class="muted">💬 ${commentsCount}</span>
-        <button class="reaction-btn" data-post-id="${post.id}" type="button" style="background:none;border:none;cursor:pointer;padding:0;">
+    <div class="mt-3">${body}</div>
+    <div class="mt-3">${media}</div>
+    <footer class="d-flex justify-content-between align-items-center mt-3">
+      <div class="d-flex gap-3">
+        <span class="text-muted">💬 ${commentsCount}</span>
+        <button class="reaction-btn btn p-0 border-0 bg-transparent" data-post-id="${
+          post.id
+        }" type="button">
           ❤️ <span class="reaction-count">${reactionsCount}</span>
         </button>
-        </div>
-        <span class="muted" style="margin:0rem 0 0 0;">${new Date(post.created).toLocaleString()}</span>
-      
+      </div>
+      <span class="text-muted">${new Date(post.created).toLocaleString()}</span>
     </footer>
   `;
 
@@ -192,15 +205,12 @@ function renderPagination(page) {
 
   for (let i = startPage; i <= endPage; i++) {
     const pageButton = el("button", {
-      className: "btn",
+      className: i === page ? "btn btn-primary" : "btn btn-outline-secondary",
       innerHTML: i,
       type: "button",
     });
     if (i === page) {
       pageButton.setAttribute("aria-current", "page");
-      pageButton.style.backgroundColor = "#246B84";
-      pageButton.style.color = "white";
-      pageButton.style.border = "none";
     }
     pageButton.addEventListener("click", () => fetchPosts(i));
     paginationContainer.appendChild(pageButton);

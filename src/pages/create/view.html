@@ -1,27 +1,91 @@
-<section class="card">
-  <h2>Create post</h2>
-  <form id="create-form" class="stack">
-    <label>
-      <div>Title (optional)</div>
-      <input name="title" class="input" placeholder="A short title" />
-    </label>
-    <label>
-      <div>Body</div>
-      <textarea name="body" class="input" rows="5" required placeholder="Write something..."></textarea>
-    </label>
-    <details>
-      <summary>Media (optional)</summary>
-      <label>
-        <div>Image URL</div>
-        <input name="mediaUrl" class="input" placeholder="https://..." />
-      </label>
-      <label>
-        <div>Alt text</div>
-        <input name="mediaAlt" class="input" placeholder="Describe the image" />
-      </label>
-    </details>
-    <button class="btn" type="submit">Publish</button>
-    <p id="create-error" class="error" role="alert" hidden></p>
-  </form>
-  <button class="btn" id="back-btn" style="margin-top: 1rem;">Back</button>
-</section>
+<div class="container py-4">
+  <div class="mx-auto" style="max-width: 1000px;">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="card-title mb-4">Create post</h2>
+          <form id="create-form">
+            <div class="mb-3">
+              <label for="title" class="form-label">Title (optional)</label>
+              <input
+                name="title"
+                class="form-control"
+                id="title"
+                placeholder="A short title"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="body" class="form-label">Body</label>
+              <textarea
+                name="body"
+                class="form-control"
+                id="body"
+                rows="5"
+                required
+                placeholder="Write something..."
+              ></textarea>
+            </div>
+            <div class="mb-3">
+              <div class="accordion" id="mediaAccordion">
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button
+                      class="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#mediaCollapse"
+                      aria-expanded="false"
+                    >
+                      Media (optional)
+                    </button>
+                  </h2>
+                  <div
+                    id="mediaCollapse"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#mediaAccordion"
+                  >
+                    <div class="accordion-body">
+                      <div class="mb-3">
+                        <label for="mediaUrl" class="form-label"
+                          >Image URL</label
+                        >
+                        <input
+                          name="mediaUrl"
+                          class="form-control"
+                          id="mediaUrl"
+                          placeholder="https://..."
+                        />
+                      </div>
+                      <div class="mb-3">
+                        <label for="mediaAlt" class="form-label"
+                          >Alt text</label
+                        >
+                        <input
+                          name="mediaAlt"
+                          class="form-control"
+                          id="mediaAlt"
+                          placeholder="Describe the image"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-primary w-100 mb-3" type="submit">
+              Publish
+            </button>
+            <div
+              id="create-error"
+              class="alert alert-danger"
+              role="alert"
+              hidden
+            ></div>
+          </form>
+          <button class="btn btn-secondary w-100" id="back-btn">Back</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

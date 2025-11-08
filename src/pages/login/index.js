@@ -37,6 +37,12 @@ export function renderLogin() {
         e.preventDefault();
         err.hidden = true;
         err.textContent = "";
+
+        const emailInput = form.querySelector("#email");
+        const passwordInput = form.querySelector("#password");
+        emailInput.classList.remove("is-invalid");
+        passwordInput.classList.remove("is-invalid");
+
         const fd = new FormData(form);
         const payload = Object.fromEntries(fd.entries());
 
@@ -50,6 +56,8 @@ export function renderLogin() {
         } catch (e) {
           err.textContent = e.message || "Login failed";
           err.hidden = false;
+          emailInput.classList.add("is-invalid");
+          passwordInput.classList.add("is-invalid");
         } finally {
           btn.disabled = false;
           btn.textContent = "Sign in";
