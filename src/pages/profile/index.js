@@ -1,5 +1,10 @@
 import { qs, el } from "../../core/dom.js";
-import { getProfile, followProfile, unfollowProfile, updateProfile } from "../../api/profiles.js";
+import {
+  getProfile,
+  followProfile,
+  unfollowProfile,
+  updateProfile,
+} from "../../api/profiles.js";
 import { getPostsByUser, reactToPost } from "../../api/posts.js";
 import { flash } from "../../ui/flash.js";
 import { getAuth } from "../../api/auth.js";
@@ -9,8 +14,11 @@ function reactedKey() {
   return `reacted:${me}`;
 }
 function getReactedSet() {
-  try { return new Set(JSON.parse(localStorage.getItem(reactedKey()) || "[]")); }
-  catch { return new Set(); }
+  try {
+    return new Set(JSON.parse(localStorage.getItem(reactedKey()) || "[]"));
+  } catch {
+    return new Set();
+  }
 }
 function saveReactedSet(s) {
   localStorage.setItem(reactedKey(), JSON.stringify(Array.from(s)));
@@ -21,36 +29,50 @@ function isReactedLocal(postId) {
 function setReactedLocal(postId, on) {
   const s = getReactedSet();
   const id = String(postId);
-  if (on) s.add(id); else s.delete(id);
+  if (on) s.add(id);
+  else s.delete(id);
   saveReactedSet(s);
 }
 function styleHeart(btn, active) {
   if (!btn) return;
   if (active) {
-    btn.style.backgroundColor = "#246B84";
-    btn.style.color = "white";
-    btn.style.borderRadius = "6px";
-    btn.style.padding = ".15rem .4rem";
+    btn.className = "btn-custom";
   } else {
+    btn.className = "";
     btn.style.backgroundColor = "transparent";
     btn.style.color = "inherit";
   }
 }
 
 function showOverlay(title, itemsHtml) {
-  const overlay = el("div", { className: "overlay", style: "position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:9999;" });
-  const box = el("div", { className: "card", style: "max-width:480px;width:90%;max-height:80vh;overflow:auto;padding:1rem;" });
+  const overlay = el("div", {
+    className:
+      "position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center",
+    style: "background:rgba(0,0,0,.5);z-index:9999;",
+  });
+  const box = el("div", {
+    className: "card mx-3",
+    style: "max-width:480px;width:90%;max-height:80vh;overflow:auto;",
+  });
   box.innerHTML = `
-    <header class="row" style="justify-content:space-between;align-items:center;margin-bottom:.5rem;">
-      <h3 style="margin:0;">${title}</h3>
-      <button id="overlay-close" class="btn" type="button">Close</button>
-    </header>
-    ${itemsHtml}
+    <div class="card-header">
+      <h3 class="card-title mb-0">${title}</h3>
+    </div>
+    <div class="card-body">
+      ${itemsHtml}
+    </div>
+    <div class="card-footer text-center">
+      <button id="overlay-close" class="btn btn-secondary" type="button">Close</button>
+    </div>
   `;
   overlay.append(box);
   document.body.append(overlay);
-  qs("#overlay-close", overlay).addEventListener("click", () => overlay.remove());
-  overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
+  qs("#overlay-close", overlay).addEventListener("click", () =>
+    overlay.remove()
+  );
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
 }
 
 function renderUserList(title, users) {
@@ -58,34 +80,52 @@ function renderUserList(title, users) {
     showOverlay(title, `<p class="muted">No users found.</p>`);
     return;
   }
-  const list = users.map(u => `
-    <li class="row gap" style="align-items:center;">
-      <img src="${u.avatar?.url || "https://placehold.co/32x32"}" alt="${u.avatar?.alt || u.name}" style="width:32px;height:32px;border-radius:50%;">
+  const list = users
+    .map(
+      (u) => `
+    <li class="d-flex align-items-center gap-2">
+      <img src="${u.avatar?.url || "https://placehold.co/32x32"}" alt="${
+        u.avatar?.alt || u.name
+      }" class="rounded-circle avatar-sm">
       <a href="#/profile/${encodeURIComponent(u.name)}" data-link>@${u.name}</a>
     </li>
-  `).join("");
-  showOverlay(title, `<ul class="stack" style="gap:.5rem;">${list}</ul>`);
+  `
+    )
+    .join("");
+  showOverlay(
+    title,
+    `<ul class="list-unstyled d-flex flex-column gap-2">${list}</ul>`
+  );
 }
 
 function postCard(p) {
   const card = el("article", { className: "card" });
   const title = p.title ?? "Untitled";
   const body = p.body ?? "";
-  const media = p.media?.url ? `<img src="${p.media.url}" alt="${p.media.alt || ''}" style="max-width:100%;border-radius:8px;">` : "";
+  const media = p.media?.url
+    ? `<img src="${p.media.url}" alt="${
+        p.media.alt || ""
+      }" class="img-fluid rounded mb-2">`
+    : "";
   const commentsCount = p._count?.comments ?? 0;
   const reactionsCount = p._count?.reactions ?? 0;
   const reacted = isReactedLocal(p.id);
 
   card.innerHTML = `
-    <h4 style="margin:0 0 .25rem 0;">${title}</h4>
-    <div class="muted" style="margin:.25rem 0 .75rem 0;">${new Date(p.created).toLocaleString()}</div>
+    <h4 class="card-title mb-1">${title}</h4>
+    <div class="text-muted mb-3">${new Date(p.created).toLocaleString()}</div>
     <p>${body}</p>
     ${media}
-    <footer class="row" style="justify-content:space-between;align-items:center;margin-top:1rem;">
-      <span class="muted">💬 ${commentsCount}</span>
-      <button class="reaction-btn" data-post-id="${p.id}" type="button" style="background:none;border:none;cursor:pointer;padding:0;">
-        ❤️ <span class="reaction-count">${reactionsCount}</span>
-      </button>
+    <footer class="d-flex justify-content-between align-items-center mt-3">
+      <div class="d-flex gap-3">
+        <span class="text-muted">💬 ${commentsCount}</span>
+        <button class="reaction-btn btn p-0 border-0 bg-transparent" data-post-id="${
+          p.id
+        }" type="button">
+          ❤️ <span class="reaction-count">${reactionsCount}</span>
+        </button>
+      </div>
+      <span class="text-muted">${new Date(p.created).toLocaleString()}</span>
     </footer>
   `;
 
@@ -144,7 +184,16 @@ export async function renderProfile(username) {
   let bioEl = qs("#profile-bio", app);
   const postsEl = qs("#profile-posts", app);
   const followBtn = qs("#follow-btn", app);
-  if (!nameEl || !avatarEl || !postsCountEl || !followersCountEl || !followingCountEl || !postsEl || !followBtn || !bioEl) {
+  if (
+    !nameEl ||
+    !avatarEl ||
+    !postsCountEl ||
+    !followersCountEl ||
+    !followingCountEl ||
+    !postsEl ||
+    !followBtn ||
+    !bioEl
+  ) {
     flash("Profile template missing required elements", "error");
     return;
   }
@@ -163,7 +212,7 @@ export async function renderProfile(username) {
   if (ticket !== renderTicket) return;
 
   const profile = profRes?.data ?? profRes;
-  const posts = Array.isArray(postsRes) ? postsRes : (postsRes?.data ?? []);
+  const posts = Array.isArray(postsRes) ? postsRes : postsRes?.data ?? [];
 
   nameEl.textContent = `@${profile.name || username}`;
   avatarEl.src = profile.avatar?.url || "https://placehold.co/128x128";
@@ -191,7 +240,7 @@ export async function renderProfile(username) {
   });
 
   postsEl.innerHTML = "";
-  posts.forEach(p => postsEl.append(postCard(p)));
+  posts.forEach((p) => postsEl.append(postCard(p)));
 
   const auth = getAuth();
   const isMe = auth?.user?.name === profile.name;
@@ -200,13 +249,14 @@ export async function renderProfile(username) {
     const startBioEdit = () => {
       if (!bioEl || bioEl.dataset.editing === "1") return;
       bioEl.dataset.editing = "1";
-      const current = bioEl.textContent === "No bio yet." ? "" : bioEl.textContent;
+      const current =
+        bioEl.textContent === "No bio yet." ? "" : bioEl.textContent;
       const wrap = el("div", {});
       wrap.innerHTML = `
-        <textarea id="bio-input" class="input" rows="4" placeholder="Write your bio...">${current}</textarea>
-        <div class="row" style="gap:.5rem;margin-top:.5rem;">
-          <button id="bio-save" class="btn">Save</button>
-          <button id="bio-cancel" class="btn muted">Cancel</button>
+        <textarea id="bio-input" class="form-control mb-2" rows="4" placeholder="Write your bio...">${current}</textarea>
+        <div class="d-flex gap-2">
+          <button id="bio-save" class="btn btn-primary btn-sm">Save</button>
+          <button id="bio-cancel" class="btn btn-secondary btn-sm">Cancel</button>
         </div>
       `;
       bioEl.replaceWith(wrap);
@@ -248,27 +298,40 @@ export async function renderProfile(username) {
     bioEl.addEventListener("click", startBioEdit, { once: true });
 
     avatarEl.addEventListener("click", () => {
-      const overlay = el("div", { className: "overlay", style: "position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:9999;" });
+      const overlay = el("div", {
+        className: "overlay",
+        style:
+          "position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:9999;",
+      });
       overlay.innerHTML = `
-        <div class="card" style="max-width:480px;width:90%;padding:1rem;">
+        <div class="card auth-card p-3">
           <h3>Update Profile Picture</h3>
-          <input type="url" id="new-avatar-url" placeholder="Enter new avatar URL" class="input" style="margin:.5rem 0;">
-          <input type="text" id="new-avatar-alt" placeholder="Enter image alt text (optional)" class="input" style="margin:.5rem 0;">
-          <div class="row" style="gap:.5rem;">
-            <button id="update-avatar-btn" class="btn">Update</button>
-            <button id="cancel-avatar-btn" class="btn muted">Cancel</button>
+          <input type="url" id="new-avatar-url" placeholder="Enter new avatar URL" class="form-control my-2">
+          <input type="text" id="new-avatar-alt" placeholder="Enter image alt text (optional)" class="form-control my-2">
+          <div class="d-flex gap-2">
+            <button id="update-avatar-btn" class="btn btn-primary">Update</button>
+            <button id="cancel-avatar-btn" class="btn btn-secondary">Cancel</button>
           </div>
         </div>
       `;
       document.body.appendChild(overlay);
-      overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
-      qs("#cancel-avatar-btn", overlay).addEventListener("click", () => overlay.remove());
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) overlay.remove();
+      });
+      qs("#cancel-avatar-btn", overlay).addEventListener("click", () =>
+        overlay.remove()
+      );
       qs("#update-avatar-btn", overlay).addEventListener("click", async () => {
         const newAvatarUrl = qs("#new-avatar-url", overlay).value.trim();
         const newAvatarAlt = qs("#new-avatar-alt", overlay).value.trim();
-        if (!newAvatarUrl) { flash("Please enter a valid URL.", "error"); return; }
+        if (!newAvatarUrl) {
+          flash("Please enter a valid URL.", "error");
+          return;
+        }
         try {
-          await updateProfile({ avatar: { url: newAvatarUrl, alt: newAvatarAlt || "" } });
+          await updateProfile({
+            avatar: { url: newAvatarUrl, alt: newAvatarAlt || "" },
+          });
           avatarEl.src = newAvatarUrl;
           flash("Profile picture updated successfully!", "success");
           overlay.remove();
@@ -278,16 +341,19 @@ export async function renderProfile(username) {
       });
     });
   } else {
-    let isFollowing = followers.some(f => f.name === auth?.user?.name);
+    let isFollowing = followers.some((f) => f.name === auth?.user?.name);
     followBtn.textContent = isFollowing ? "Unfollow" : "Follow";
     followBtn.onclick = async () => {
-      if (!auth?.token) { flash("Please log in to follow users.", "error"); return; }
+      if (!auth?.token) {
+        flash("Please log in to follow users.", "error");
+        return;
+      }
       try {
         if (isFollowing) {
           await unfollowProfile(profile.name);
           isFollowing = false;
           followBtn.textContent = "Follow";
-          const idx = followers.findIndex(f => f.name === auth.user.name);
+          const idx = followers.findIndex((f) => f.name === auth.user.name);
           if (idx >= 0) followers.splice(idx, 1);
         } else {
           await followProfile(profile.name);

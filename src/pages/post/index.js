@@ -1,5 +1,11 @@
 import { qs } from "../../core/dom.js";
-import { getPost, updatePost, deletePost, reactToPost, commentOnPost } from "../../api/posts.js";
+import {
+  getPost,
+  updatePost,
+  deletePost,
+  reactToPost,
+  commentOnPost,
+} from "../../api/posts.js";
 import { getAuth } from "../../api/auth.js";
 import { flash } from "../../ui/flash.js";
 
@@ -10,8 +16,11 @@ function reactedKey() {
   return `reacted:${me}`;
 }
 function getReactedSet() {
-  try { return new Set(JSON.parse(localStorage.getItem(reactedKey()) || "[]")); }
-  catch { return new Set(); }
+  try {
+    return new Set(JSON.parse(localStorage.getItem(reactedKey()) || "[]"));
+  } catch {
+    return new Set();
+  }
 }
 function saveReactedSet(s) {
   localStorage.setItem(reactedKey(), JSON.stringify(Array.from(s)));
@@ -22,17 +31,16 @@ function isReactedLocal(postId) {
 function setReactedLocal(postId, on) {
   const s = getReactedSet();
   const id = String(postId);
-  if (on) s.add(id); else s.delete(id);
+  if (on) s.add(id);
+  else s.delete(id);
   saveReactedSet(s);
 }
 function styleHeart(btn, active) {
   if (!btn) return;
   if (active) {
-    btn.style.backgroundColor = "#246B84";
-    btn.style.color = "white";
-    btn.style.borderRadius = "6px";
-    btn.style.padding = ".2rem .5rem";
+    btn.className = "btn-custom btn-custom-sm";
   } else {
+    btn.className = "";
     btn.style.backgroundColor = "transparent";
     btn.style.color = "inherit";
   }
@@ -67,10 +75,16 @@ export async function renderPost(postId) {
     qs("#post-author").textContent = `by ${postData.author?.name || "Unknown"}`;
     qs("#post-body").textContent = postData.body || "";
     qs("#post-media").innerHTML = postData.media?.url
-      ? `<img alt="${postData.media.alt || ''}" src="${postData.media.url}" style="max-width:100%;border-radius:8px;"/>`
+      ? `<img alt="${postData.media.alt || ""}" src="${
+          postData.media.url
+        }" class="img-fluid rounded"/>`
       : "";
-    qs("#post-comments-count").textContent = `💬 ${postData._count?.comments || 0}`;
-    qs("#post-reactions-count").textContent = `${postData._count?.reactions || 0}`;
+    qs("#post-comments-count").textContent = `💬 ${
+      postData._count?.comments || 0
+    }`;
+    qs("#post-reactions-count").textContent = `${
+      postData._count?.reactions || 0
+    }`;
 
     const commentsList = qs("#comments-list");
     commentsList.innerHTML = "";
@@ -82,7 +96,9 @@ export async function renderPost(postId) {
         commentEl.innerHTML = `
           <p><strong>${comment.owner?.name || "Anonymous"}</strong></p>
           <p>${comment.body}</p>
-          <small class="muted">${new Date(comment.created).toLocaleString()}</small>
+          <small class="muted">${new Date(
+            comment.created
+          ).toLocaleString()}</small>
         `;
         frag.append(commentEl);
       }
@@ -102,7 +118,9 @@ export async function renderPost(postId) {
           styleHeart(reactBtn, !wasOn);
           const fresh = await getPost(postData.id);
           const freshData = fresh?.data ?? fresh;
-          qs("#post-reactions-count").textContent = `${freshData._count?.reactions || 0}`;
+          qs("#post-reactions-count").textContent = `${
+            freshData._count?.reactions || 0
+          }`;
         } catch (e) {
           flash(e.message || "Failed to react", "error");
         }
@@ -220,10 +238,14 @@ export async function renderPost(postId) {
       deleteBtn.style.display = "none";
     }
 
-    qs("#back-btn")?.addEventListener("click", (e) => {
-      e.preventDefault();
-      history.back();
-    }, { once: true });
+    qs("#back-btn")?.addEventListener(
+      "click",
+      (e) => {
+        e.preventDefault();
+        history.back();
+      },
+      { once: true }
+    );
   } catch (e) {
     flash(e.message || "Failed to load post", "error");
     location.hash = "#/feed";
