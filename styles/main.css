@@ -14,6 +14,98 @@ body { margin:0; font:16px system-ui, sans-serif; background:var(--bg); color:va
 a { color: white; text-decoration: none; } a:hover { text-decoration: underline; color: white; }
 .btn { color: white; text-decoration: none;} .btn:hover { text-decoration: underline; color: white; }
 
+.dropdown {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  padding: 0;
+  overflow: visible;
+}
+
+.dropdown.input {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.tabs {
+  width: 100%;
+}
+
+.tabs .dropdown {
+  display: block;
+  align-self: stretch;
+}
+
+.dropdown-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: .75rem 1rem;
+  border: 0;
+  border-radius: 10px;
+  background: #0f1424;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.dropdown-trigger:focus-visible,
+.dropdown-item:focus-visible {
+  outline: 2px solid #4fb3c9;
+  outline-offset: 2px;
+}
+
+.dropdown-caret {
+  font-size: 0.9rem;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  min-width: 100%;
+  background: var(--card);
+  border: 1px solid #1f2942;
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  z-index: 20;
+}
+
+.dropdown.open .dropdown-menu {
+  display: block;
+}
+
+.dropdown-item {
+  width: 100%;
+  display: block;
+  padding: .85rem 1rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background: #1f2942;
+}
+
+.dropdown-item[aria-selected="true"] {
+  background: transparent;
+}
+
+.dropdown-item + .dropdown-item {
+  border-top: 1px solid #1f2942;
+}
+
 h1 { font-family: "Lobster"; }
 .subtitle { font-family: "Lobster"; }
 
@@ -42,6 +134,14 @@ h1 { font-family: "Lobster"; }
 }
 #pagination-container { text-align: center; }
 #pagination-container .btn { display: inline-block; }
+
+select.input option {
+  background: #0f1424;
+  color: var(--text);
+}
+.dropdown-item:hover {
+  background: #1f2942;
+}
 
 @media (max-width: 1024px) {
   .brand { display: none !important; }

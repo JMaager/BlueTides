@@ -8,6 +8,7 @@ let currentPage = 1;
 let totalPages = 1;
 let currentQuery = "";
 let currentFeed = "general";
+let feedDropdownCleanup = null;
 
 function reactedKey() {
   const me = getAuth()?.user?.name || "anon";
@@ -28,6 +29,75 @@ function setReactedLocal(postId, on) {
   const id = String(postId);
   if (on) s.add(id); else s.delete(id);
   saveReactedSet(s);
+}
+
+function setupFeedDropdown() {
+  feedDropdownCleanup?.();
+
+  const dropdown = qs("#feed-dropdown");
+  const trigger = qs("#feed-select");
+  const label = qs("#feed-select-label");
+  const menu = qs("#feed-select-menu");
+  if (!dropdown || !trigger || !label || !menu) return;
+
+  const items = Array.from(menu.querySelectorAll(".dropdown-item"));
+
+  const syncSelection = (value) => {
+    const selectedItem = items.find((item) => item.dataset.value === value);
+    label.textContent = selectedItem?.textContent?.trim() || "General";
+    trigger.setAttribute("aria-expanded", dropdown.classList.contains("open") ? "true" : "false");
+    items.forEach((item) => {
+      const isSelected = item.dataset.value === value;
+      item.setAttribute("aria-selected", isSelected ? "true" : "false");
+    });
+  };
+
+  const closeMenu = () => {
+    dropdown.classList.remove("open");
+    trigger.setAttribute("aria-expanded", "false");
+  };
+
+  const toggleMenu = () => {
+    const willOpen = !dropdown.classList.contains("open");
+    dropdown.classList.toggle("open", willOpen);
+    trigger.setAttribute("aria-expanded", willOpen ? "true" : "false");
+  };
+
+  const handleDocumentClick = (event) => {
+    if (!dropdown.contains(event.target)) closeMenu();
+  };
+
+  const handleTriggerClick = () => toggleMenu();
+
+  const handleTriggerKeydown = (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      toggleMenu();
+    }
+    if (event.key === "Escape") closeMenu();
+  };
+
+  const handleItemClick = (event) => {
+    const item = event.currentTarget;
+    currentFeed = item.dataset.value || "general";
+    syncSelection(currentFeed);
+    closeMenu();
+    fetchPosts(1);
+  };
+
+  trigger.addEventListener("click", handleTriggerClick);
+  trigger.addEventListener("keydown", handleTriggerKeydown);
+  items.forEach((item) => item.addEventListener("click", handleItemClick));
+  document.addEventListener("click", handleDocumentClick);
+
+  syncSelection(currentFeed);
+
+  feedDropdownCleanup = () => {
+    trigger.removeEventListener("click", handleTriggerClick);
+    trigger.removeEventListener("keydown", handleTriggerKeydown);
+    items.forEach((item) => item.removeEventListener("click", handleItemClick));
+    document.removeEventListener("click", handleDocumentClick);
+  };
 }
 
 async function fetchPosts(page = 1) {
@@ -235,14 +305,7 @@ export async function renderFeed() {
     qs("#feed-list")?.after(paginationContainer);
   }
 
-  const feedSelect = qs("#feed-select");
-  if (feedSelect) {
-    currentFeed = feedSelect.value;
-    feedSelect.addEventListener("change", () => {
-      currentFeed = feedSelect.value;
-      fetchPosts(1);
-    });
-  }
+  setupFeedDropdown();
 
   const input = qs("#search-input");
   const form = qs("#search-form");

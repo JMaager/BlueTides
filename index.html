@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
       <link rel="icon" type="image/png" href="/images/BlueTides_tiny.png">
-      <link rel="stylesheet" href="./styles/main.css"/>
+      <link rel="stylesheet" href="./styles/main.css?v=4"/>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>BlueTides</title>
@@ -29,9 +29,9 @@
             <img id="profile-avatar" src="https://placehold.co/64x64" alt="Profile" style="width: 48px; height: 48px; border-radius: 50%;" />
             <a href="#/login" id="login-link">Login<span id="login-text" style="margin-left: 8px; font-size: 14px; color: #333; display: none;">Log in</span></a>
           </button>
-          <div id="profile-dropdown" style="display: none; position: absolute; top: 60px; right: 0; background: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); z-index: 1000;">
-            <a href="#/profile" class="dropdown-item" style="display: block; padding: 8px 16px; text-decoration: none; color: #333;">View Profile</a>
-            <button id="logout-btn" class="dropdown-item" style="display: block; padding: 8px 16px; background: none; border: none; text-align: left; cursor: pointer; color: #333;">Log Out</button>
+          <div id="profile-dropdown" style="display: none; position: absolute; top: 60px; right: 0; background: var(--card); border: 1px solid #1f2942; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); z-index: 1000; min-width: 150px; overflow: hidden;">
+            <a href="#/profile" class="dropdown-item" style="display: block; padding: 10px 16px; text-decoration: none; color: var(--text);">View Profile</a>
+            <button id="logout-btn" class="dropdown-item" style="display: block; width: 100%; padding: 10px 16px; background: none; border: none; border-top: 1px solid #1f2942; text-align: left; cursor: pointer; color: var(--text); font-size: 1rem;">Log Out</button>
           </div>
       </div>
       </div>

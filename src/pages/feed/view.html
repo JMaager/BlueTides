@@ -1,10 +1,16 @@
 <section class="stack">
   <nav class="tabs" id="feed-tabs">
     <label for="feed-select" class="muted">Choose feed:</label>
-    <select id="feed-select" class="input">
-      <option value="general" selected>General</option>
-      <option value="following">Following</option>
-    </select>
+    <div class="dropdown input" id="feed-dropdown">
+      <button type="button" class="dropdown-trigger" id="feed-select" aria-haspopup="listbox" aria-expanded="false">
+        <span id="feed-select-label">General</span>
+        <span class="dropdown-caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="dropdown-menu" id="feed-select-menu" role="listbox" aria-label="Choose feed">
+        <button type="button" class="dropdown-item" data-value="general" aria-selected="true">General</button>
+        <button type="button" class="dropdown-item" data-value="following" aria-selected="false">Following</button>
+      </div>
+    </div>
   </nav>
 
   <div class="card">
